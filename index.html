@@ -1,0 +1,863 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#021024">
+<meta name="background-color" content="#021024">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ClipBoards">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icons/icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+<title>ClipBoards — Premium TikTok Dashboard</title>
+<style>
+:root{
+  --bg:#021024;
+  --bg-deep:#010b19;
+  --surface:#052659;
+  --surface-2:#0b315f;
+  --surface-3:#5483B3;
+  --line:rgba(125,160,202,.20);
+  --line-strong:rgba(125,160,202,.38);
+  --text:#C1E8FF;
+  --text-strong:#F3FBFF;
+  --muted:#7DA0CA;
+  --accent:#7DA0CA;
+  --accent-bright:#C1E8FF;
+  --danger:#ff9b9b;
+  --shadow:0 24px 75px rgba(0,0,0,.40);
+  --shadow-soft:0 14px 38px rgba(0,0,0,.28);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+html,body{
+  margin:0;min-height:100%;
+  background:
+    radial-gradient(circle at 14% 0%,rgba(84,131,179,.28),transparent 31%),
+    radial-gradient(circle at 86% 18%,rgba(193,232,255,.08),transparent 24%),
+    linear-gradient(145deg,#010b19 0%,#021024 48%,#052659 125%);
+  color:var(--text);
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif
+}
+body{overflow-x:hidden}
+body:before{
+  content:"";position:fixed;inset:-25%;pointer-events:none;z-index:-1;
+  background:
+    radial-gradient(circle at 26% 30%,rgba(84,131,179,.15),transparent 22%),
+    radial-gradient(circle at 75% 70%,rgba(125,160,202,.09),transparent 19%);
+  filter:blur(60px);
+  animation:ambientDrift 20s ease-in-out infinite alternate
+}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{
+  outline:2px solid rgba(193,232,255,.65);outline-offset:2px
+}
+
+@keyframes ambientDrift{
+  0%{transform:translate3d(-2%,0,0) scale(1)}
+  100%{transform:translate3d(3%,-2%,0) scale(1.08)}
+}
+@keyframes topbarGlow{
+  0%,100%{box-shadow:0 8px 35px rgba(0,0,0,.12)}
+  50%{box-shadow:0 12px 48px rgba(5,38,89,.28)}
+}
+@keyframes riseIn{
+  from{opacity:0;transform:translateY(18px) scale(.985)}
+  to{opacity:1;transform:none}
+}
+@keyframes cardIn{
+  from{opacity:0;transform:translateY(22px) scale(.97)}
+  to{opacity:1;transform:none}
+}
+@keyframes modalIn{
+  from{opacity:0;transform:translateY(18px) scale(.94)}
+  to{opacity:1;transform:none}
+}
+@keyframes overlayIn{from{opacity:0}to{opacity:1}}
+@keyframes shimmer{
+  0%{transform:translateX(-120%)}
+  55%,100%{transform:translateX(120%)}
+}
+@keyframes pulseRing{
+  0%,100%{box-shadow:0 0 0 0 rgba(193,232,255,.16)}
+  50%{box-shadow:0 0 0 8px rgba(193,232,255,0)}
+}
+@keyframes toastIn{
+  from{opacity:0;transform:translateY(12px) scale(.96)}
+  to{opacity:1;transform:none}
+}
+@keyframes floatSoft{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-3px)}
+}
+
+.app{min-height:100vh}
+.topbar{
+  height:82px;display:flex;align-items:center;gap:34px;padding:0 28px;
+  position:sticky;top:0;z-index:10;
+  background:rgba(2,16,36,.72);
+  backdrop-filter:blur(24px) saturate(145%);
+  -webkit-backdrop-filter:blur(24px) saturate(145%);
+  border-bottom:1px solid rgba(125,160,202,.13);
+  animation:topbarGlow 8s ease-in-out infinite
+}
+.profile{
+  width:42px;height:42px;border-radius:50%;
+  background:
+    radial-gradient(circle at 35% 30%,#C1E8FF 0 16%,#7DA0CA 17% 35%,#5483B3 36% 65%,#052659 66%);
+  border:1px solid rgba(193,232,255,.36);
+  box-shadow:0 0 0 5px rgba(125,160,202,.06),0 10px 26px rgba(0,0,0,.28);
+  flex:none;
+  animation:pulseRing 4s ease-in-out infinite
+}
+.tabs{display:flex;align-items:center;gap:34px;height:100%}
+.tab{
+  height:100%;display:flex;align-items:center;border:0;background:none;
+  color:rgba(193,232,255,.54);font-size:18px;font-weight:750;position:relative;
+  transition:color .25s ease
+}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--text-strong)}
+.tab.active:after{
+  content:"";position:absolute;left:0;right:0;bottom:13px;height:3px;border-radius:4px;
+  background:var(--accent-bright);box-shadow:0 0 18px rgba(193,232,255,.48)
+}
+.top-spacer{flex:1}
+.icon-btn{
+  width:46px;height:46px;border-radius:14px;border:1px solid transparent;
+  background:rgba(5,38,89,.34);color:var(--text);font-size:23px;
+  transition:transform .25s ease,background .25s ease,border-color .25s ease
+}
+.icon-btn:hover{
+  transform:rotate(18deg) scale(1.04);
+  background:rgba(84,131,179,.44);border-color:var(--line-strong)
+}
+
+.shell{
+  max-width:1460px;margin:0 auto;padding:34px 34px 70px;position:relative
+}
+.shell:before{
+  content:"";position:absolute;left:8%;right:8%;top:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(125,160,202,.28),transparent);
+  opacity:.65
+}
+.search-row{
+  display:flex;gap:16px;align-items:center;margin-bottom:18px;
+  animation:riseIn .6s cubic-bezier(.2,.8,.2,1) both
+}
+.search{
+  flex:1;height:66px;
+  background:rgba(5,38,89,.54);
+  border:1px solid rgba(125,160,202,.26);
+  border-radius:22px;color:var(--text-strong);
+  padding:0 24px 0 56px;font-size:17px;outline:none;
+  background-image:radial-gradient(circle,rgba(193,232,255,.9) 0 8%,transparent 10%);
+  background-size:28px 28px;background-repeat:no-repeat;background-position:20px center;
+  box-shadow:inset 0 1px 0 rgba(193,232,255,.05),0 10px 30px rgba(0,0,0,.15);
+  transition:border-color .25s ease,box-shadow .25s ease,background-color .25s ease,transform .25s ease
+}
+.search::placeholder{color:rgba(125,160,202,.55)}
+.search:hover{border-color:rgba(125,160,202,.42)}
+.search:focus{
+  border-color:rgba(193,232,255,.56);
+  background-color:rgba(5,38,89,.76);
+  box-shadow:0 0 0 5px rgba(125,160,202,.07),0 18px 48px rgba(0,0,0,.22);
+  transform:translateY(-1px)
+}
+.add-board{
+  width:66px;height:66px;border-radius:20px;border:1px solid rgba(193,232,255,.25);
+  background:linear-gradient(145deg,#C1E8FF,#7DA0CA);
+  color:#021024;font-size:32px;line-height:1;
+  box-shadow:0 13px 31px rgba(0,0,0,.24),0 0 28px rgba(125,160,202,.13);
+  transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s ease
+}
+.add-board:hover{
+  transform:translateY(-3px) rotate(2deg) scale(1.03);
+  box-shadow:0 19px 40px rgba(0,0,0,.32),0 0 35px rgba(125,160,202,.22)
+}
+.add-board:active{transform:translateY(0) scale(.97)}
+
+.quick-save{
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(420px,1.35fr);
+  gap:26px;align-items:center;margin:0 0 26px;padding:25px 26px;
+  background:
+    linear-gradient(135deg,rgba(5,38,89,.90),rgba(2,16,36,.78)),
+    radial-gradient(circle at 80% 20%,rgba(193,232,255,.09),transparent 35%);
+  border:1px solid var(--line);
+  border-radius:24px;
+  box-shadow:var(--shadow-soft);
+  position:relative;overflow:hidden;
+  animation:riseIn .65s .08s cubic-bezier(.2,.8,.2,1) both
+}
+.quick-save:after{
+  content:"";position:absolute;inset:0;width:40%;
+  background:linear-gradient(90deg,transparent,rgba(193,232,255,.06),transparent);
+  transform:translateX(-120%);pointer-events:none;
+  animation:shimmer 8s ease-in-out infinite
+}
+.quick-save-copy,.quick-save-controls{position:relative;z-index:1}
+.quick-save-kicker{
+  font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:7px;font-weight:800
+}
+.quick-save h2{margin:0 0 7px;font-size:23px;letter-spacing:-.02em;color:var(--text-strong)}
+.quick-save p{margin:0;color:rgba(125,160,202,.87);line-height:1.5;font-size:14px;max-width:620px}
+.quick-save-controls{display:grid;gap:11px}
+.quick-url{
+  width:100%;height:54px;background:rgba(1,11,25,.66);
+  border:1px solid rgba(125,160,202,.24);border-radius:15px;color:var(--text);
+  padding:0 16px;outline:none;transition:.25s ease
+}
+.quick-url::placeholder{color:rgba(125,160,202,.50)}
+.quick-url:focus{border-color:rgba(193,232,255,.50);box-shadow:0 0 0 4px rgba(125,160,202,.06)}
+.quick-save-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center}
+.default-board-picker{position:relative;min-width:0}
+.default-board-search{
+  width:100%;height:44px;background:rgba(1,11,25,.58);color:var(--text);
+  border:1px solid rgba(125,160,202,.22);border-radius:12px;padding:0 13px;outline:none;transition:.25s ease
+}
+.default-board-search::placeholder{color:rgba(125,160,202,.48)}
+.default-board-search:focus{border-color:rgba(193,232,255,.48);box-shadow:0 0 0 4px rgba(125,160,202,.06)}
+.default-board-results{
+  display:none;position:absolute;left:0;right:0;top:54px;z-index:25;
+  background:rgba(5,38,89,.97);border:1px solid rgba(125,160,202,.30);
+  border-radius:14px;padding:5px;box-shadow:0 26px 58px rgba(0,0,0,.48);
+  max-height:220px;overflow:auto;backdrop-filter:blur(20px)
+}
+.default-board-results.open{display:block;animation:riseIn .2s ease both}
+.default-board-option{
+  display:flex;align-items:center;gap:9px;width:100%;border:0;background:transparent;
+  color:var(--text);text-align:left;border-radius:10px;padding:10px 11px;font-size:14px;
+  transition:background .18s ease,transform .18s ease
+}
+.default-board-option:hover,.default-board-option.active{
+  background:rgba(84,131,179,.35);transform:translateX(2px)
+}
+.default-board-option span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.default-board-option .check{margin-left:auto;color:var(--accent-bright);opacity:.9}
+.default-board-empty{padding:10px 11px;color:rgba(125,160,202,.62);font-size:13px}
+.quick-save-btn{height:44px;white-space:nowrap}
+.quick-save-btn:disabled{opacity:.45;cursor:not-allowed}
+
+.filters{
+  display:flex;gap:9px;flex-wrap:wrap;margin-bottom:24px;
+  animation:riseIn .6s .14s both
+}
+.filter{
+  border:1px solid transparent;background:rgba(5,38,89,.68);color:rgba(193,232,255,.80);
+  border-radius:13px;padding:11px 16px;font-weight:750;
+  transition:transform .2s ease,background .2s ease,border-color .2s ease,color .2s ease
+}
+.filter:hover{transform:translateY(-1px);border-color:var(--line)}
+.filter.active{
+  background:var(--accent-bright);color:#021024;
+  box-shadow:0 9px 24px rgba(0,0,0,.20)
+}
+.boards-head{
+  display:flex;justify-content:space-between;align-items:end;margin:6px 0 20px;
+  animation:riseIn .6s .18s both
+}
+.boards-head h1{font-size:31px;margin:0 0 5px;letter-spacing:-.035em;color:var(--text-strong)}
+.boards-head p{margin:0;color:rgba(125,160,202,.74)}
+.sort{
+  border:1px solid var(--line);background:rgba(5,38,89,.62);color:var(--text);
+  border-radius:12px;padding:10px 13px;outline:none;transition:.2s ease
+}
+.sort:hover{border-color:var(--line-strong);background:rgba(84,131,179,.28)}
+
+.boards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:28px 18px}
+.board-card{min-width:0;animation:cardIn .6s cubic-bezier(.2,.8,.2,1) both}
+.board-card:nth-child(1){animation-delay:.03s}.board-card:nth-child(2){animation-delay:.07s}
+.board-card:nth-child(3){animation-delay:.11s}.board-card:nth-child(4){animation-delay:.15s}
+.board-card:nth-child(5){animation-delay:.19s}.board-card:nth-child(6){animation-delay:.23s}
+.board-card:nth-child(7){animation-delay:.27s}.board-card:nth-child(8){animation-delay:.31s}
+.cover{
+  display:grid;grid-template-columns:1.45fr .8fr;grid-template-rows:1fr 1fr;gap:2px;
+  height:190px;border-radius:20px;overflow:hidden;background:#052659;position:relative;
+  border:1px solid rgba(125,160,202,.14);
+  box-shadow:0 15px 35px rgba(0,0,0,.23);
+  transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .35s ease,border-color .35s ease
+}
+.cover:after{
+  content:"";position:absolute;inset:-40% -80%;
+  background:linear-gradient(110deg,transparent 44%,rgba(193,232,255,.08) 50%,transparent 56%);
+  transform:translateX(-45%) rotate(8deg);transition:transform .7s ease;pointer-events:none
+}
+.board-card:hover .cover{
+  transform:translateY(-7px) scale(1.012);
+  border-color:rgba(125,160,202,.36);
+  box-shadow:0 27px 58px rgba(0,0,0,.36),0 0 31px rgba(5,38,89,.22)
+}
+.board-card:hover .cover:after{transform:translateX(45%) rotate(8deg)}
+.cover .tile{background:#0b315f;overflow:hidden}
+.cover .tile:first-child{grid-row:1/3}
+.cover .tile,.pin-thumb{position:relative}
+.cover .tile:before,.pin-thumb:before{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(120deg,rgba(193,232,255,.08),transparent 42%);
+  z-index:2;pointer-events:none
+}
+.thumb-image{
+  width:100%;height:100%;display:block;object-fit:cover;object-position:center;border:0;
+  transition:transform .65s cubic-bezier(.2,.8,.2,1),filter .35s ease
+}
+.board-card:hover .thumb-image{transform:scale(1.045);filter:saturate(1.08)}
+.cover .tile.has-thumb{background:#052659}
+.pin-thumb.has-thumb{background:#021024}
+.thumb-loading{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);font-size:12px;background:#052659;z-index:1}
+.thumb-fallback{
+  position:absolute;inset:0;display:flex;align-items:flex-end;padding:12px;
+  background:
+    radial-gradient(circle at 75% 25%,rgba(193,232,255,.24),transparent 25%),
+    linear-gradient(145deg,#052659,#5483B3 55%,#0b315f);
+  color:var(--text-strong);font-weight:800;font-size:12px
+}
+.thumb-fallback small{display:block;color:var(--muted);font-weight:600;margin-top:3px}
+.art-1{background:linear-gradient(145deg,#C1E8FF 0 34%,#5483B3 35% 63%,#7DA0CA 64% 100%)}
+.art-2{background:linear-gradient(120deg,#052659,#5483B3 55%,#C1E8FF)}
+.art-3{background:linear-gradient(145deg,#7DA0CA,#0b315f 64%,#5483B3)}
+.art-4{background:linear-gradient(110deg,#C1E8FF 0 32%,#5483B3 33% 65%,#052659 66%)}
+.art-5{background:linear-gradient(135deg,#021024 0 25%,#7DA0CA 26% 57%,#C1E8FF 58%)}
+.art-6{background:linear-gradient(155deg,#7DA0CA,#052659 58%,#5483B3)}
+.art-7{background:linear-gradient(135deg,#5483B3,#C1E8FF 52%,#0b315f)}
+.art-8{background:linear-gradient(140deg,#7DA0CA,#052659 45%,#C1E8FF)}
+.art-9{background:linear-gradient(120deg,#0b315f,#7DA0CA 54%,#C1E8FF)}
+.art-10{background:linear-gradient(145deg,#C1E8FF 0 28%,#5483B3 29% 70%,#7DA0CA 71%)}
+.art-11{background:linear-gradient(130deg,#021024,#7DA0CA 48%,#0b315f)}
+.art-12{background:linear-gradient(155deg,#7DA0CA,#5483B3 55%,#C1E8FF)}
+.cover-label{
+  position:absolute;left:11px;bottom:10px;padding:7px 10px;
+  background:rgba(2,16,36,.74);backdrop-filter:blur(10px);
+  border:1px solid rgba(193,232,255,.15);border-radius:10px;
+  font-weight:800;font-size:13px;color:var(--text-strong);
+  box-shadow:0 8px 19px rgba(0,0,0,.20)
+}
+.board-info{padding:10px 4px 0}
+.board-info h3{font-size:18px;margin:0 0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text-strong)}
+.board-meta{display:flex;align-items:center;justify-content:space-between;color:rgba(125,160,202,.72);font-size:13px}
+.board-actions{display:flex;gap:5px}
+.tiny{
+  width:30px;height:30px;border-radius:9px;border:1px solid transparent;
+  background:rgba(5,38,89,.82);color:var(--text);
+  transition:transform .2s ease,background .2s ease,border-color .2s ease
+}
+.tiny:hover{background:rgba(84,131,179,.43);border-color:var(--line);transform:translateY(-1px)}
+.tiny.danger:hover{background:rgba(95,44,44,.55);color:#ffe6e6;border-color:rgba(255,155,155,.28)}
+
+.empty{
+  padding:58px 20px;text-align:center;border:1px dashed rgba(125,160,202,.27);
+  border-radius:20px;color:rgba(125,160,202,.74);
+  background:rgba(5,38,89,.25);animation:riseIn .45s ease both
+}
+.empty strong{display:block;color:var(--text-strong);font-size:18px;margin-bottom:7px}
+
+.overlay{
+  display:none;position:fixed;inset:0;background:rgba(1,9,18,.72);
+  z-index:30;align-items:center;justify-content:center;padding:18px;
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)
+}
+.overlay.open{display:flex;animation:overlayIn .22s ease both}
+.overlay.open .modal{animation:modalIn .34s cubic-bezier(.2,.85,.2,1) both}
+.modal{
+  width:min(560px,96vw);
+  background:linear-gradient(145deg,rgba(5,38,89,.98),rgba(2,16,36,.98));
+  border:1px solid rgba(125,160,202,.28);border-radius:24px;padding:25px;
+  box-shadow:0 30px 100px rgba(0,0,0,.58),0 0 52px rgba(5,38,89,.20)
+}
+.modal h2{margin:0 0 18px;font-size:24px;color:var(--text-strong);letter-spacing:-.02em}
+.modal input,.modal textarea,.modal select{
+  width:100%;margin:7px 0 14px;padding:14px 15px;
+  background:rgba(1,11,25,.66);color:var(--text);
+  border:1px solid rgba(125,160,202,.23);border-radius:12px;outline:none;transition:.22s ease
+}
+.modal input::placeholder,.modal textarea::placeholder{color:rgba(125,160,202,.48)}
+.modal input:focus,.modal textarea:focus,.modal select:focus{
+  border-color:rgba(193,232,255,.52);box-shadow:0 0 0 4px rgba(125,160,202,.06)
+}
+.modal label{display:block;font-size:13px;color:rgba(125,160,202,.82)}
+.actions{display:flex;justify-content:flex-end;gap:10px}
+.btn{
+  border:1px solid transparent;border-radius:12px;padding:12px 17px;font-weight:800;
+  transition:transform .2s ease,box-shadow .2s ease,background .2s ease,border-color .2s ease
+}
+.btn:hover{transform:translateY(-2px)}
+.btn:active{transform:translateY(0) scale(.98)}
+.btn.secondary{background:rgba(5,38,89,.80);color:var(--text);border-color:rgba(125,160,202,.17)}
+.btn.secondary:hover{background:rgba(84,131,179,.34);border-color:var(--line)}
+.btn.primary{
+  background:linear-gradient(135deg,#C1E8FF,#7DA0CA);color:#021024;
+  box-shadow:0 11px 25px rgba(0,0,0,.20)
+}
+.btn.primary:hover{box-shadow:0 16px 32px rgba(0,0,0,.28),0 0 24px rgba(125,160,202,.16)}
+.hint{color:rgba(125,160,202,.60);font-size:12px;line-height:1.45;margin:-8px 0 13px}
+.toast{
+  position:fixed;right:22px;bottom:22px;
+  background:rgba(5,38,89,.94);border:1px solid rgba(125,160,202,.30);
+  color:var(--text-strong);padding:13px 16px;border-radius:14px;display:none;z-index:50;
+  box-shadow:0 19px 48px rgba(0,0,0,.37);backdrop-filter:blur(16px)
+}
+.toast.show{display:flex;animation:toastIn .28s cubic-bezier(.2,.8,.2,1) both}
+.toast-undo{
+  border:0;background:var(--accent-bright);color:#021024;font-weight:800;
+  border-radius:9px;padding:7px 10px;cursor:pointer
+}
+
+/* Board view */
+.board-view{display:none}
+.board-view.open{display:block;animation:riseIn .45s cubic-bezier(.2,.8,.2,1) both}
+.boards-view.hidden{display:none}
+.back{
+  border:0;background:none;color:var(--text);padding:5px 0;font-weight:750;margin-bottom:16px;
+  transition:transform .2s ease,color .2s ease
+}
+.back:hover{transform:translateX(-4px);color:var(--accent-bright)}
+.board-hero{display:flex;justify-content:space-between;align-items:end;gap:20px;margin-bottom:20px}
+.board-hero h1{margin:0 0 5px;font-size:34px;color:var(--text-strong);letter-spacing:-.035em}
+.board-hero p{margin:0;color:rgba(125,160,202,.74)}
+.pins{columns:4 220px;column-gap:16px}
+.pin{
+  break-inside:avoid;margin:0 0 16px;background:rgba(5,38,89,.82);
+  border-radius:17px;overflow:hidden;border:1px solid rgba(125,160,202,.15);
+  box-shadow:0 13px 32px rgba(0,0,0,.20);
+  transition:transform .3s ease,box-shadow .3s ease,border-color .3s ease;
+  animation:cardIn .5s cubic-bezier(.2,.8,.2,1) both
+}
+.pin:hover{
+  transform:translateY(-5px);border-color:rgba(125,160,202,.32);
+  box-shadow:0 23px 46px rgba(0,0,0,.31)
+}
+.pin-thumb{height:220px;overflow:hidden}
+.pin:hover .thumb-image{transform:scale(1.035)}
+.pin-body{padding:13px}
+.pin h3{font-size:15px;margin:0 0 7px;line-height:1.35;color:var(--text-strong)}
+.pin p{font-size:12px;color:rgba(125,160,202,.70);margin:0;line-height:1.45}
+.pin-foot{display:flex;justify-content:space-between;align-items:center;margin-top:10px;color:rgba(125,160,202,.60);font-size:11px;gap:8px}
+.pin-actions{display:flex;align-items:center;gap:6px}
+.star{
+  background:none;border:0;color:var(--accent-bright);font-size:20px;
+  transition:transform .2s ease
+}
+.star:hover{transform:scale(1.18) rotate(5deg)}
+.pin-delete{opacity:.9}
+
+@media(max-width:1100px){
+  .boards{grid-template-columns:repeat(3,1fr)}
+  .quick-save{grid-template-columns:1fr}
+  .quick-save-controls{max-width:none}
+}
+@media(max-width:800px){
+  .topbar{padding:0 16px;gap:18px}
+  .tabs{gap:18px}.tab{font-size:16px}
+  .shell{padding:22px 16px 40px}
+  .boards{grid-template-columns:repeat(2,1fr)}
+  .cover{height:170px}
+}
+@media(max-width:520px){
+  .quick-save{padding:18px;border-radius:18px}
+  .quick-save h2{font-size:18px}
+  .quick-save-row{grid-template-columns:1fr}
+  .default-board-label{display:none}
+  .quick-save-btn{width:100%}
+  .default-board-results{top:54px}
+  .board-hero{align-items:flex-start;flex-direction:column}
+  .board-hero .actions{width:100%;justify-content:flex-start;flex-wrap:wrap}
+  .topbar{height:72px}
+  .profile{width:36px;height:36px}
+  .tabs{gap:12px}.tab{font-size:14px}.tab.active:after{bottom:10px}
+  .icon-btn{width:38px;height:38px}
+  .search-row{gap:10px}.search{height:56px;font-size:15px;padding-left:48px}
+  .add-board{width:56px;height:56px;font-size:28px}
+  .boards{grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 10px}
+  .cover{height:128px;border-radius:14px}
+  .board-info h3{font-size:15px}.board-meta{font-size:12px}
+  .boards-head{display:block}.sort{margin-top:12px}
+  .pins{columns:2 150px}.pin-thumb{height:180px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*:before,*:after{
+    animation-duration:.01ms!important;animation-iteration-count:1!important;
+    scroll-behavior:auto!important;transition-duration:.01ms!important
+  }
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="profile" aria-label="Профиль" title="ClipBoards"></div>
+  <nav class="tabs" aria-label="Разделы">
+    <button class="tab active" id="boardsTab">Панель</button>
+  </nav>
+  <div class="top-spacer"></div>
+  <button class="icon-btn" id="settingsBtn" title="Настройки">⚙</button>
+</header>
+
+<main class="shell">
+  <section class="boards-view" id="boardsView">
+    <div class="search-row">
+      <input id="boardSearch" class="search" autocomplete="off" placeholder="Поиск ваших сохранённых идей">
+      <button class="add-board" id="addBoard" title="Создать панель">＋</button>
+    </div>
+    <section class="quick-save" aria-label="Быстрое сохранение TikTok">
+      <div class="quick-save-copy">
+        <div class="quick-save-kicker">Быстрое сохранение</div>
+        <h2>Сохрани TikTok в панель по умолчанию</h2>
+        <p>Вставь ссылку и нажми одну кнопку — видео сразу попадёт в выбранную панель.</p>
+      </div>
+      <div class="quick-save-controls">
+        <input id="quickUrl" class="quick-url" autocomplete="off" placeholder="Вставь ссылку TikTok…" inputmode="url" aria-label="Ссылка TikTok">
+        <div class="quick-save-row">
+          <div class="default-board-picker" id="defaultBoardPicker">
+            <input id="defaultBoardSearch" class="default-board-search" autocomplete="off" placeholder="Выбрать панель…" aria-label="Поиск панели">
+            <div class="default-board-results" id="defaultBoardResults"></div>
+          </div>
+          <button class="btn primary quick-save-btn" id="quickSave" type="button">Сохранить в панель по умолчанию</button>
+        </div>
+      </div>
+    </section>
+    <div class="filters" role="tablist">
+      <button class="filter active" data-filter="all">Все панели</button>
+      <button class="filter" data-filter="archived">Архивированные</button>
+    </div>
+    <div class="boards-head">
+      <div><h1>Панель</h1><p>Создавай свои категории и складывай полезные TikTok по темам.</p></div>
+      <select class="sort" id="boardSort" aria-label="Сортировка"><option value="recent">Сначала новые</option><option value="name">По названию</option><option value="count">По количеству видео</option></select>
+    </div>
+    <section class="boards" id="boards"></section>
+    <div class="empty" id="boardsEmpty" style="display:none"><strong>Пока нет подходящих панелей</strong>Создай первую панель кнопкой «＋».</div>
+  </section>
+
+  <section class="board-view" id="boardView">
+    <button class="back" id="backToBoards">← Панель</button>
+    <div class="board-hero"><div><h1 id="boardTitle"></h1><p id="boardMeta"></p></div><div class="actions"><button class="btn secondary" id="deleteBoardInView">Удалить панель</button><button class="btn primary" id="addPinInBoard">＋ Добавить видео</button></div></div>
+    <section class="pins" id="pins"></section>
+    <div class="empty" id="pinsEmpty" style="display:none"><strong>В этой панели пока нет видео</strong>Добавь первое видео и вернись к нему позже.</div>
+  </section>
+</main>
+
+<div class="overlay" id="boardModal">
+  <div class="modal" role="dialog" aria-modal="true">
+    <h2>Создать панель</h2>
+    <label for="boardName">Название</label>
+    <input id="boardName" maxlength="50" placeholder="Например: Python, AI, Продажи, Идеи">
+    <label for="boardEmoji">Значок</label>
+    <input id="boardEmoji" maxlength="2" value="📌" placeholder="📌">
+    <div class="hint">Название панели придумываешь сам. Потом она появится в панели и в списке при сохранении видео.</div>
+    <div class="actions"><button class="btn secondary" id="cancelBoard">Отмена</button><button class="btn primary" id="saveBoard">Создать панель</button></div>
+  </div>
+</div>
+
+<div class="overlay" id="pinModal">
+  <div class="modal" role="dialog" aria-modal="true">
+    <h2>Сохранить видео</h2>
+    <label for="pinUrl">Ссылка TikTok</label><input id="pinUrl" placeholder="https://www.tiktok.com/...">
+    <label for="pinTitle">Название</label><input id="pinTitle" placeholder="Что полезного в этом видео?"><label for="pinBoard">Панель</label><select id="pinBoard"></select>
+    <label for="pinTags">Теги</label><input id="pinTags" placeholder="#python #ai #продажи">
+    <label for="pinNote">Моя заметка</label><textarea id="pinNote" rows="4" placeholder="Что нужно попробовать / запомнить?"></textarea>
+    <div class="actions"><button class="btn secondary" id="cancelPin">Отмена</button><button class="btn primary" id="savePin">Сохранить</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script>
+const KEY='clipboards_state_v3';
+const DEFAULT_BOARDS=[
+  {id:'b1',name:'Python',icon:'🐍',archived:false,createdAt:Date.now()-5000000},
+  {id:'b2',name:'AI',icon:'🤖',archived:false,createdAt:Date.now()-4000000},
+  {id:'b3',name:'Продажи',icon:'💰',archived:false,createdAt:Date.now()-3000000},
+  {id:'b4',name:'Маркетинг',icon:'📈',archived:false,createdAt:Date.now()-2000000},
+  {id:'b5',name:'Идеи для проектов',icon:'💡',archived:false,createdAt:Date.now()-1000000},
+  {id:'b6',name:'Reels',icon:'🎬',archived:false,createdAt:Date.now()}
+];
+const DEFAULT_PINS=[
+ {id:'p1',boardId:'b1',title:'Практика Python каждый день',url:'https://www.tiktok.com/',tags:'#python #учёба',note:'Выписать 3 упражнения и повторить.',createdAt:Date.now()-90000000,favorite:false,art:'art-1'},
+ {id:'p2',boardId:'b1',title:'Полезные конструкции Python',url:'https://www.tiktok.com/',tags:'#python #код',note:'Сохранить примеры в свои заметки.',createdAt:Date.now()-80000000,favorite:true,art:'art-2'},
+ {id:'p3',boardId:'b2',title:'Как работает LLM',url:'https://www.tiktok.com/',tags:'#ai #llm',note:'Разобраться с терминами.',createdAt:Date.now()-70000000,favorite:false,art:'art-3'},
+ {id:'p4',boardId:'b2',title:'Идея AI-продукта',url:'https://www.tiktok.com/',tags:'#ai #saas',note:'Проверить, можно ли сделать MVP.',createdAt:Date.now()-60000000,favorite:true,art:'art-4'},
+ {id:'p5',boardId:'b3',title:'Как искать клиентов',url:'https://www.tiktok.com/',tags:'#sales #лиды',note:'Попробовать на своих потенциальных клиентах.',createdAt:Date.now()-50000000,favorite:false,art:'art-5'},
+ {id:'p6',boardId:'b4',title:'Идеи для коротких видео',url:'https://www.tiktok.com/',tags:'#marketing #reels',note:'Использовать как список тем.',createdAt:Date.now()-40000000,favorite:false,art:'art-6'},
+ {id:'p7',boardId:'b5',title:'Ниша для IT-сервиса',url:'https://www.tiktok.com/',tags:'#business #idea',note:'Провести быстрый ресерч.',createdAt:Date.now()-30000000,favorite:false,art:'art-7'},
+ {id:'p8',boardId:'b6',title:'Монтаж Reels',url:'https://www.tiktok.com/',tags:'#reels #video',note:'Повторить монтаж в следующем ролике.',createdAt:Date.now()-20000000,favorite:false,art:'art-8'}
+];
+let state=load();let filter='all';let boardQuery='';let sort='recent';let selectedBoard=null;let activeTop='boards';
+let defaultBoardId=loadDefaultBoardId();
+const $=id=>document.getElementById(id);
+function load(){try{const raw=localStorage.getItem(KEY);if(raw){const d=JSON.parse(raw);if(Array.isArray(d.boards)&&Array.isArray(d.pins))return d}}catch(e){}const d={boards:DEFAULT_BOARDS,pins:DEFAULT_PINS};localStorage.setItem(KEY,JSON.stringify(d));return d}
+function save(){localStorage.setItem(KEY,JSON.stringify(state))}
+function loadDefaultBoardId(){try{const saved=localStorage.getItem(KEY+'_default_board');if(saved&&state.boards.some(b=>b.id===saved&&!b.archived))return saved}catch(e){}return state.boards.find(b=>!b.archived)?.id||''}
+function saveDefaultBoardId(){localStorage.setItem(KEY+'_default_board',defaultBoardId)}
+function id(){return globalThis.crypto?.randomUUID?.()||('p'+Date.now().toString(36)+Math.random().toString(36).slice(2,10))}
+function esc(v){return String(v??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]))}
+function toast(s){const t=$('toast');t.textContent=s;t.classList.add('show');clearTimeout(window.__toast);window.__toast=setTimeout(()=>t.classList.remove('show'),1800)}
+function board(id){return state.boards.find(b=>b.id===id)}
+function boardPins(bid){return state.pins.filter(p=>p.boardId===bid).sort((a,b)=>b.createdAt-a.createdAt)}
+function boardCount(bid){return state.pins.filter(p=>p.boardId===bid).length}
+function boardImages(bid){const arr=boardPins(bid).slice(0,4);while(arr.length<4)arr.push(null);return arr}
+function selectedDefaultLabel(){
+ const b=board(defaultBoardId);
+ return b&&!b.archived?`${b.icon} ${b.name}`:'';
+}
+function restoreDefaultBoardField(){
+ const input=$('defaultBoardSearch');
+ const label=selectedDefaultLabel();
+ if(document.activeElement!==input) input.value=label;
+}
+function renderDefaultBoardSelect(){
+ const input=$('defaultBoardSearch');
+ const results=$('defaultBoardResults');
+ const boards=state.boards.filter(b=>!b.archived);
+ if(!boards.length){
+   defaultBoardId='';
+   saveDefaultBoardId();
+   input.value='';
+   input.disabled=true;
+   input.placeholder='Сначала создай панель';
+   results.innerHTML='<div class="default-board-empty">Сначала создай панель.</div>';
+   results.classList.remove('open');
+   $('quickSave').disabled=true;
+   return;
+ }
+ if(!boards.some(b=>b.id===defaultBoardId)){defaultBoardId=boards[0].id;saveDefaultBoardId();}
+ input.disabled=false;
+ input.placeholder='Выбрать панель…';
+ $('quickSave').disabled=false;
+ restoreDefaultBoardField();
+ renderDefaultBoardResults('', false);
+}
+function renderDefaultBoardResults(query='',open=true){
+ const wrap=$('defaultBoardResults');
+ const q=query.trim().toLowerCase();
+ const boards=state.boards.filter(b=>!b.archived&&(!q||`${b.name} ${b.icon}`.toLowerCase().includes(q)));
+ wrap.innerHTML=boards.length?boards.map(b=>`<button type="button" class="default-board-option ${b.id===defaultBoardId?'active':''}" data-pick-default="${b.id}"><span>${esc(b.icon)}</span><span>${esc(b.name)}</span>${b.id===defaultBoardId?'<span class="check">✓</span>':''}</button>`).join(''):'<div class="default-board-empty">Панель не найдена.</div>';
+ if(open)wrap.classList.add('open'); else wrap.classList.remove('open');
+}
+function selectDefaultBoard(bid){
+ const b=board(bid);
+ if(!b||b.archived)return;
+ defaultBoardId=bid;
+ saveDefaultBoardId();
+ const input=$('defaultBoardSearch');
+ input.value=`${b.icon} ${b.name}`;
+ input.dataset.selected='1';
+ $('defaultBoardResults').classList.remove('open');
+ toast(`Выбрана панель: «${b.name}»`);
+}
+function extractTikTokId(raw){
+ try{
+   const u=new URL(raw);
+   const parts=u.pathname.split('/').filter(Boolean);
+   const videoIndex=parts.findIndex(x=>x==='video');
+   if(videoIndex>=0&&parts[videoIndex+1]){const m=parts[videoIndex+1].match(/\d+/);if(m)return m[0]}
+   if(parts[0]==='v'&&parts[1])return parts[1].match(/\d+/)?.[0]||'';
+ }catch(e){}
+ return '';
+}
+async function fetchTikTokMeta(url){
+ const endpoint=`https://www.tiktok.com/oembed?url=${encodeURIComponent(url)}`;
+ const response=await fetch(endpoint,{headers:{Accept:'application/json'}});
+ if(!response.ok)throw new Error(`oEmbed ${response.status}`);
+ const data=await response.json();
+ return {title:data.title||'',author:data.author_name||'',thumbnail:data.thumbnail_url||'',width:data.thumbnail_width||0,height:data.thumbnail_height||0};
+}
+async function resolveTikTokMeta(pin){
+ if(!isTikTokUrl(pin.url))return false;
+ try{
+   const meta=await fetchTikTokMeta(pin.url);
+   let changed=false;
+   if(meta.thumbnail&&pin.thumbnail!==meta.thumbnail){pin.thumbnail=meta.thumbnail;changed=true}
+   if(meta.title&&(!pin.title||pin.title.startsWith('TikTok — '))&&pin.title!==meta.title){pin.title=meta.title;changed=true}
+   if(meta.author&&pin.author!==meta.author){pin.author=meta.author;changed=true}
+   if(changed)save();
+   return changed;
+ }catch(e){
+   return false;
+ }
+}
+function thumbMarkup(pin,boardCover=false){
+ if(pin.thumbnail){return `<img class="thumb-image" src="${esc(pin.thumbnail)}" alt="Обложка TikTok" loading="lazy" referrerpolicy="no-referrer" onerror="this.closest('.${boardCover?'tile':'pin-thumb'}').classList.remove('has-thumb');this.remove();">`}
+ const videoId=extractTikTokId(pin.url);
+ if(videoId&&!boardCover){return `<div class="thumb-fallback"><div>TikTok<small>Открыть видео</small></div></div>`}
+ return `<div class="thumb-fallback"><div>TikTok<small>Обложка загружается при обновлении</small></div></div>`;
+}
+function renderBoards(){
+ const q=boardQuery.trim().toLowerCase();
+ let list=state.boards.filter(b=>(filter==='archived'?b.archived:!b.archived)&&(!q||b.name.toLowerCase().includes(q)));
+ list.sort((a,b)=>sort==='name'?a.name.localeCompare(b.name,'ru'):sort==='count'?boardCount(b.id)-boardCount(a.id):b.createdAt-a.createdAt);
+ $('boards').innerHTML=list.map(b=>{
+   const imgs=boardImages(b.id);
+   const count=boardCount(b.id);
+   return `<article class="board-card"><div class="cover" data-action="open-board" data-id="${b.id}">${imgs.map((p,i)=>`<div class="tile ${p?.thumbnail?'has-thumb ':''}${p?.art||('art-'+((i+(b.id.charCodeAt(1)||0))%12+1))}">${p?thumbMarkup(p,true):''}</div>`).join('')}<div class="cover-label">${esc(b.icon)} ${esc(b.name)}</div></div><div class="board-info"><h3>${esc(b.name)}</h3><div class="board-meta"><span>${count} видео</span><span class="board-actions"><button class="tiny" data-action="archive-board" data-id="${b.id}" title="${b.archived?'Вернуть из архива':'Архивировать'}">${b.archived?'↩':'⌘'}</button><button class="tiny danger" data-action="delete-board" data-id="${b.id}" title="Удалить панель">×</button></span></div></div></article>`;
+ }).join('');
+ $('boardsEmpty').style.display=list.length?'none':'block';
+}
+function renderBoardView(){
+ const b=board(selectedBoard);
+ if(!b)return;
+ const pins=boardPins(b.id);
+ $('boardTitle').textContent=b.icon+' '+b.name;
+ $('boardMeta').textContent=`${pins.length} видео${b.archived?' · в архиве':''}`;
+ $('pins').innerHTML=pins.map(p=>`<article class="pin"><div class="pin-thumb ${p.thumbnail?'has-thumb ':''}${p.art||'art-1'}" data-action="open-url" data-url="${esc(p.url)}">${thumbMarkup(p,false)}</div><div class="pin-body"><h3>${esc(p.title)}</h3><p>${esc(p.note||'')}</p><div class="pin-foot"><span>${esc(p.tags||'')}</span><span class="pin-actions"><button class="star" data-action="toggle-fav" data-id="${p.id}" title="Избранное">${p.favorite?'★':'☆'}</button><button class="tiny danger pin-delete" data-action="delete-pin" data-id="${p.id}" title="Удалить видео">×</button></span></div></div></article>`).join('');
+ $('pinsEmpty').style.display=pins.length?'none':'block';
+}
+function openBoard(bid){selectedBoard=bid;$('boardsView').classList.add('hidden');$('boardView').classList.add('open');renderBoardView()}
+function closeBoard(){selectedBoard=null;$('boardView').classList.remove('open');$('boardsView').classList.remove('hidden');renderBoards()}
+function openBoardModal(){$('boardName').value='';$('boardEmoji').value='📌';$('boardModal').classList.add('open');setTimeout(()=>$('boardName').focus(),50)}
+function openPinModal(prefBoard){if(!state.boards.length){openBoardModal();toast('Сначала создай панель');return}$('pinBoard').innerHTML=state.boards.filter(b=>!b.archived).map(b=>`<option value="${b.id}">${esc(b.icon)} ${esc(b.name)}</option>`).join('');$('pinBoard').value=prefBoard||state.boards.find(b=>!b.archived)?.id||'';$('pinUrl').value='';$('pinTitle').value='';$('pinTags').value='';$('pinNote').value='';$('pinModal').classList.add('open');setTimeout(()=>$('pinUrl').focus(),50)}
+function closeModals(){document.querySelectorAll('.overlay').forEach(x=>x.classList.remove('open'))}
+function toggleArchive(bid){const b=board(bid);if(!b)return;b.archived=!b.archived;save();if(selectedBoard===bid)closeBoard();renderBoards();renderDefaultBoardSelect();toast(b.archived?'Панель отправлена в архив':'Панель возвращена')}
+let undoTimer=0;
+let undoAction=null;
+function showUndoToast(message,action){
+ const t=$('toast');
+ clearTimeout(undoTimer);
+ undoAction=action;
+ t.innerHTML=`<span>${esc(message)}</span><button type="button" class="toast-undo" id="toastUndo">Отменить</button>`;
+ t.classList.add('show');
+ $('toastUndo').onclick=()=>{
+   const fn=undoAction;
+   undoAction=null;
+   clearTimeout(undoTimer);
+   t.classList.remove('show');
+   if(fn)fn();
+ };
+ undoTimer=setTimeout(()=>{undoAction=null;t.classList.remove('show')},5000);
+}
+function deleteBoard(bid){
+ const index=state.boards.findIndex(x=>x.id===bid);
+ if(index<0)return;
+ const removedBoard=state.boards[index];
+ const removedPins=state.pins.filter(p=>p.boardId===bid);
+ state.boards.splice(index,1);
+ state.pins=state.pins.filter(p=>p.boardId!==bid);
+ const wasSelected=selectedBoard===bid;
+ const wasDefault=defaultBoardId===bid;
+ if(wasDefault){
+   defaultBoardId=state.boards.find(x=>!x.archived)?.id||'';
+   saveDefaultBoardId();
+ }
+ if(wasSelected){
+   selectedBoard=null;
+   $('boardView').classList.remove('open');
+   $('boardsView').classList.remove('hidden');
+ }
+ save();
+ renderBoards();
+ renderDefaultBoardSelect();
+ showUndoToast(`Панель «${removedBoard.name}» удалена`,()=>{
+   state.boards.splice(index,0,removedBoard);
+   if(removedPins.length)state.pins.push(...removedPins);
+   if(wasDefault)defaultBoardId=removedBoard.id,saveDefaultBoardId();
+   save();
+   renderBoards();
+   renderDefaultBoardSelect();
+   if(wasSelected)openBoard(bid);
+   toast('Удаление отменено');
+ });
+}
+function isTikTokUrl(raw){try{const u=new URL(raw);const h=u.hostname.toLowerCase();return u.protocol==='https:'&&(h==='tiktok.com'||h.endsWith('.tiktok.com')||h==='vm.tiktok.com'||h==='vt.tiktok.com')}catch(e){return false}}
+async function quickSaveTikTok(){
+ const url=$('quickUrl').value.trim();
+ const boardId=defaultBoardId;
+ if(!url){toast('Вставь ссылку TikTok');$('quickUrl').focus();return}
+ if(!isTikTokUrl(url)){toast('Нужна корректная ссылка TikTok');$('quickUrl').focus();return}
+ const b=board(boardId);
+ if(!b||b.archived){renderDefaultBoardSelect();toast('Выбери активную панель по умолчанию');return}
+ const normalized=url.replace(/\s+/g,'');
+ if(state.pins.some(p=>p.boardId===boardId&&p.url===normalized)){toast('Это видео уже сохранено в этой панели');return}
+ const pin={id:id(),boardId,title:'TikTok — '+new Date().toLocaleDateString('ru-RU'),url:normalized,tags:'#tiktok',note:'',createdAt:Date.now(),favorite:false,art:'art-'+((state.pins.length%12)+1),thumbnail:'',author:''};
+ state.pins.push(pin);save();$('quickUrl').value='';renderBoards();renderDefaultBoardSelect();if(selectedBoard)renderBoardView();toast(`Сохранено в «${b.name}»`);
+ const found=await resolveTikTokMeta(pin);
+ if(found){renderBoards();if(selectedBoard)renderBoardView();toast('Обложка TikTok получена');}
+}
+function deletePin(pid){
+ const index=state.pins.findIndex(x=>x.id===pid);
+ if(index<0)return;
+ const removedPin=state.pins[index];
+ state.pins.splice(index,1);
+ save();
+ renderBoards();
+ if(selectedBoard===removedPin.boardId)renderBoardView();
+ showUndoToast(`Видео «${removedPin.title}» удалено`,()=>{
+   state.pins.splice(index,0,removedPin);
+   save();
+   renderBoards();
+   if(selectedBoard===removedPin.boardId)renderBoardView();
+   toast('Удаление отменено');
+ });
+}
+$('addBoard').onclick=openBoardModal;
+$('cancelBoard').onclick=closeModals;
+$('saveBoard').onclick=()=>{const name=$('boardName').value.trim();const icon=$('boardEmoji').value.trim()||'📌';if(!name){toast('Введи название панели');return}if(state.boards.some(b=>b.name.toLowerCase()===name.toLowerCase())){toast('Такая панель уже существует');return}state.boards.push({id:id(),name,icon,archived:false,createdAt:Date.now()});save();closeModals();renderBoards();renderDefaultBoardSelect();toast('Панель создана')};
+$('quickSave').onclick=quickSaveTikTok;
+$('quickUrl').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();quickSaveTikTok()}});
+$('defaultBoardSearch').addEventListener('focus',()=>{const input=$('defaultBoardSearch');if(input.dataset.selected==='1'){input.value='';input.dataset.selected='0'}renderDefaultBoardResults(input.value)});
+$('defaultBoardSearch').addEventListener('input',e=>{e.target.dataset.selected='0';renderDefaultBoardResults(e.target.value)});
+$('defaultBoardPicker').addEventListener('click',e=>{const item=e.target.closest('[data-pick-default]');if(item)selectDefaultBoard(item.dataset.pickDefault)});
+$('defaultBoardSearch').addEventListener('blur',()=>setTimeout(()=>{restoreDefaultBoardField();$('defaultBoardResults').classList.remove('open')},120));
+$('boardSearch').oninput=e=>{boardQuery=e.target.value;renderBoards()};$('boardSort').onchange=e=>{sort=e.target.value;renderBoards()};document.querySelectorAll('.filter').forEach(btn=>btn.onclick=()=>{filter=btn.dataset.filter;document.querySelectorAll('.filter').forEach(x=>x.classList.remove('active'));btn.classList.add('active');renderBoards()});
+$('boards').addEventListener('click',e=>{const action=e.target.closest('[data-action]');if(!action)return;const id=action.dataset.id;const type=action.dataset.action;if(type==='open-board'){openBoard(id)}else if(type==='archive-board'){e.stopPropagation();toggleArchive(id)}else if(type==='delete-board'){e.stopPropagation();deleteBoard(id)}});
+$('pins').addEventListener('click',e=>{const action=e.target.closest('[data-action]');if(!action)return;const id=action.dataset.id;const type=action.dataset.action;if(type==='open-url'){const url=action.dataset.url;window.open(url,'_blank','noopener,noreferrer')}else if(type==='toggle-fav'){e.stopPropagation();const p=state.pins.find(x=>x.id===id);if(p){p.favorite=!p.favorite;save();renderBoardView()}}else if(type==='delete-pin'){e.stopPropagation();deletePin(id)}});
+$('backToBoards').onclick=closeBoard;$('addPinInBoard').onclick=()=>openPinModal(selectedBoard);$('deleteBoardInView').onclick=()=>deleteBoard(selectedBoard);$('savePin').onclick=()=>{const url=$('pinUrl').value.trim();const title=$('pinTitle').value.trim();const boardId=$('pinBoard').value;if(!url||!title||!boardId){toast('Заполни ссылку, название и панель');return}const newPin={id:id(),boardId,title,url,tags:$('pinTags').value.trim(),note:$('pinNote').value.trim(),createdAt:Date.now(),favorite:false,art:'art-'+((state.pins.length%12)+1),thumbnail:'',author:''};state.pins.push(newPin);save();closeModals();renderBoards();if(selectedBoard)renderBoardView();toast('Видео сохранено в панель');resolveTikTokMeta(newPin).then(changed=>{if(changed){renderBoards();if(selectedBoard)renderBoardView();toast('Обложка TikTok получена')}})};$('cancelPin').onclick=closeModals;
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{$('boardsView').classList.remove('hidden');$('boardView').classList.remove('open');document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));t.classList.add('active')});$('settingsBtn').onclick=()=>toast('Настройки добавим следующим шагом');
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModals()});document.querySelectorAll('.overlay').forEach(o=>o.onclick=e=>{if(e.target===o)o.classList.remove('open')});
+state.pins.forEach(p=>{if(typeof p.thumbnail!=='string')p.thumbnail='';if(typeof p.author!=='string')p.author=''});save();renderBoards();renderDefaultBoardSelect();
+
+// Android/Chromium Share Target: TikTok -> ClipBoards -> quick save
+function handleIncomingShare(){
+  try{
+    const params=new URLSearchParams(location.search);
+    const incoming=(params.get('url')||params.get('text')||'').trim();
+    if(!incoming || !isTikTokUrl(incoming)) return;
+    const input=$('quickUrl');
+    if(input){
+      input.value=incoming;
+      input.focus();
+      history.replaceState({},'',location.pathname+location.hash);
+      setTimeout(()=>quickSaveTikTok(),120);
+    }
+  }catch(e){ console.warn('Share target handling failed:',e); }
+}
+state.pins.filter(p=>!p.thumbnail&&isTikTokUrl(p.url)).slice(0,12).forEach(p=>resolveTikTokMeta(p).then(changed=>{if(changed){renderBoards();if(selectedBoard)renderBoardView();}}));
+handleIncomingShare();
+</script>
+
+
+
+
+<script>
+document.addEventListener('click', function(e){
+  const btn=e.target.closest('button');
+  if(!btn || btn.disabled) return;
+  const rect=btn.getBoundingClientRect();
+  const dot=document.createElement('span');
+  dot.style.cssText=
+    'position:absolute;width:8px;height:8px;border-radius:50%;pointer-events:none;' +
+    'background:rgba(193,232,255,.28);left:'+(e.clientX-rect.left)+'px;top:'+(e.clientY-rect.top)+'px;' +
+    'transform:translate(-50%,-50%) scale(0);animation:premiumRipple .55s ease-out forwards;';
+  if(getComputedStyle(btn).position==='static') btn.style.position='relative';
+  btn.style.overflow='hidden';
+  btn.appendChild(dot);
+  setTimeout(()=>dot.remove(),600);
+});
+const rippleStyle=document.createElement('style');
+rippleStyle.textContent='@keyframes premiumRipple{to{transform:translate(-50%,-50%) scale(22);opacity:0}}';
+document.head.appendChild(rippleStyle);
+</script>
+
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(err => {
+      console.warn('Service worker registration failed:', err);
+    });
+  });
+}
+</script>
+
+</body>
+</html>
